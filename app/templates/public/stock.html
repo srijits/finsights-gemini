@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ symbol }} News{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-base-100 rounded-lg p-6 border border-base-300">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold text-base-content">{{ symbol }}</h1>
+                    {% if symbol_info and symbol_info.is_nifty50 %}
+                    <span class="badge badge-primary">Nifty 50</span>
+                    {% endif %}
+                </div>
+                {% if symbol_info %}
+                <p class="text-secondary mt-1">{{ symbol_info.company_name }}</p>
+                <span class="badge badge-ghost badge-sm mt-2">{{ symbol_info.sector }}</span>
+                {% else %}
+                <p class="text-secondary mt-1">Stock News & Updates</p>
+                {% endif %}
+            </div>
+            <div class="flex gap-2">
+                <a href="/stocks" class="btn btn-ghost btn-sm">All Stocks</a>
+                <a href="/" class="btn btn-ghost btn-sm">Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- News List -->
+    {% if news_items %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for news in news_items %}
+        <article class="news-card">
+            <div class="card-body p-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="category-badge category-badge-{{ news.category }}">
+                        {{ category_names.get(news.category, news.category) }}
+                    </span>
+                    <span class="time-stamp">{{ news.fetched_at | format_date('relative') }}</span>
+                    {% if news.sentiment_score is not none %}
+                    {{ news.sentiment_score | sentiment_badge(False) }}
+                    {% endif %}
+                </div>
+                <h3 class="card-title text-base font-semibold line-clamp-2">
+                    <a href="/news/{{ news.id }}" class="hover:text-primary">{{ news.title }}</a>
+                </h3>
+                <p class="text-sm text-secondary line-clamp-2">{{ news.summary | format_summary(150) }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 bg-base-100 rounded-lg border border-base-300">
+        <h3 class="text-lg font-semibold text-base-content mb-2">No News Found</h3>
+        <p class="text-secondary mb-4">No news available for {{ symbol }}</p>
+        <p class="text-sm text-secondary mb-4">
+            News for this stock will be fetched on demand. Please try refreshing.
+        </p>
+        <button onclick="location.reload()" class="btn btn-primary btn-sm">Refresh</button>
+    </div>
+    {% endif %}
+
+    <!-- Other Nifty 50 Stocks -->
+    {% if nifty50_symbols %}
+    <div class="bg-base-100 rounded-lg p-6 border border-base-300">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-base-content">Nifty 50 Stocks</h3>
+            <a href="/stocks" class="text-sm text-primary hover:underline">View All</a>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            {% for s in nifty50_symbols %}
+            <a href="/stock/{{ s.symbol }}"
+               class="badge {% if s.symbol == symbol %}badge-primary{% else %}badge-outline hover:badge-primary{% endif %}">
+                {{ s.symbol }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+[Unit]
+Description=FinSights News Service (Port 8501)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/finsights
+ExecStart=/snap/bin/uv run uvicorn app.main:app --host 127.0.0.1 --port 8501
+Environment="PATH=/snap/bin:/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=/home/ubuntu"
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

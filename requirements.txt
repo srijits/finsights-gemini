@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+sqlalchemy
+aiosqlite
+python-dotenv
+google-genai>=1.0.0
+apscheduler
+bcrypt
+python-jose
+httpx
+cryptography
+pytz
+itsdangerous
+markdown
+bleach
