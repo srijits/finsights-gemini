@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # ============================================================================
-# Install FinSights Service
+# Install FinSights (Gemini Edition)
 # ============================================================================
-# Clones and installs FinSights news platform at fin.afxo.in on port 8501
-# Repository: https://github.com/marketcalls/FinSights.git
+# Installs FinSights news platform with Google Gemini AI
+# Repository: https://github.com/srijits/finsights-gemini.git
 # Uses uv for Python package management
 # ============================================================================
 
@@ -20,7 +20,7 @@ NC='\033[0m'
 
 # Configuration
 FINSIGHTS_DIR="/home/ubuntu/finsights"
-GIT_REPO="https://github.com/marketcalls/FinSights.git"
+GIT_REPO="https://github.com/srijits/finsights-gemini.git"
 DOMAIN="fin.afxo.in"
 PORT="8501"
 SERVICE_NAME="finsights"
@@ -74,25 +74,29 @@ rm -f /var/lib/letsencrypt/.certbot.lock 2>/dev/null || true
 echo -e "${GREEN}  ✅ Certbot check complete${NC}"
 
 # ============================================================================
-# Step 2: Check that code directory exists (no git pull - code must be copied manually)
+# Step 2: Clone or update repository
 # ============================================================================
-echo -e "${BLUE}[2/8] Checking code directory...${NC}"
+echo -e "${BLUE}[2/8] Setting up repository...${NC}"
 
-if [ ! -d "$FINSIGHTS_DIR" ]; then
-    echo -e "${RED}  ❌ Directory $FINSIGHTS_DIR does not exist!${NC}"
-    echo -e "${YELLOW}  Please copy the finsights code to $FINSIGHTS_DIR first.${NC}"
-    echo -e "${YELLOW}  Example: scp -r ./finsights ubuntu@server:/home/ubuntu/${NC}"
-    exit 1
-fi
-
-if [ ! -f "$FINSIGHTS_DIR/app/main.py" ]; then
-    echo -e "${RED}  ❌ app/main.py not found in $FINSIGHTS_DIR${NC}"
-    echo -e "${YELLOW}  Please ensure the complete finsights code is copied.${NC}"
-    exit 1
+if [ -d "$FINSIGHTS_DIR/.git" ]; then
+    echo -e "${YELLOW}  Repository exists, pulling latest...${NC}"
+    cd "$FINSIGHTS_DIR"
+    git fetch origin
+    git reset --hard origin/main
+    echo -e "${GREEN}  ✅ Repository updated${NC}"
+elif [ -d "$FINSIGHTS_DIR" ]; then
+    echo -e "${YELLOW}  Directory exists but not a git repo${NC}"
+    echo -e "${YELLOW}  Backing up and cloning fresh...${NC}"
+    mv "$FINSIGHTS_DIR" "${FINSIGHTS_DIR}.bak.$(date +%Y%m%d%H%M%S)"
+    sudo -u ubuntu git clone "$GIT_REPO" "$FINSIGHTS_DIR"
+    echo -e "${GREEN}  ✅ Repository cloned${NC}"
+else
+    echo -e "${CYAN}  Cloning from $GIT_REPO...${NC}"
+    sudo -u ubuntu git clone "$GIT_REPO" "$FINSIGHTS_DIR"
+    echo -e "${GREEN}  ✅ Repository cloned${NC}"
 fi
 
 chown -R ubuntu:ubuntu "$FINSIGHTS_DIR"
-echo -e "${GREEN}  ✅ Code directory verified${NC}"
 
 # ============================================================================
 # Step 3: Setup Python Environment with uv
